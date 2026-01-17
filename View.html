@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Global Command Center</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { margin: 0; background: #000; font-family: 'Courier New', monospace; }
+        #map { height: 100vh; width: 100%; }
+        .hud {
+            position: absolute; top: 10px; right: 10px; z-index: 1000;
+            background: rgba(0, 20, 0, 0.8); border: 1px solid #0f0;
+            color: #0f0; padding: 15px; border-radius: 5px; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="hud">
+        STATUS: <span style="color:white">LINK ACTIVE</span><br>
+        SPEED: <span id="speed" style="color:white">0.0</span> km/h<br>
+        COORD: <span id="coords" style="color:white">0, 0</span>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJbxJhyYneksMRNylHbp-JKQqF4uVpaxc",
+            authDomain: "mytracker-31c39.firebaseapp.com",
+            projectId: "mytracker-31c39",
+            storageBucket: "mytracker-31c39.firebasestorage.app",
+            messagingSenderId: "252427552060",
+            appId: "1:252427552060:web:bd411bae4eb8db92704a39",
+            measurementId: "G-610SXC3K9R",
+            databaseURL: "https://mytracker-31c39-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        // 1. Setup Map with Satellite Hybrid View
+        const map = L.map('map', { zoomControl: false }).setView([0, 0], 2);
+        L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}').addTo(map);
+
+        // 2. Add Marker and a History Path (Polyline)
+        const marker = L.circleMarker([0, 0], { color: '#0f0', fillOpacity: 1, radius: 8 }).addTo(map);
+        const trail = L.polyline([], { color: '#0f0', weight: 3, dashArray: '5, 10' }).addTo(map);
+
+        firebase.database().ref("live_data").on("value", snap => {
+            const val = snap.val();
+            if(val) {
+                const pos = [val.lat, val.lng];
+                
+                // Update Marker
+                marker.setLatLng(pos);
+                
+                // Add to history trail
+                trail.addLatLng(pos);
+                
+                // Smooth camera movement
+                map.flyTo(pos, 18);
+                
+                // Update Dashboard
+                document.getElementById("coords").innerText = `${val.lat.toFixed(4)}, ${val.lng.toFixed(4)}`;
+            }
+        });
+    </script>
+</body>
+</html>
